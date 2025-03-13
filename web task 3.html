@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <style>
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 10px;
+            width: 300px;
+            height: 300px;
+            margin: 50px auto;
+        }
+        .cell {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 36px;
+            cursor: pointer;
+        }
+        .cell:hover {
+            background-color: #f0f0f0;
+        }
+        .game-state {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .button-group {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-center">Tic Tac Toe</h1>
+    <div class="button-group">
+        <button class="btn btn-primary" id="player-vs-player-button">Player vs Player</button>
+        <button class="btn btn-primary" id="player-vs-computer-button">Player vs Computer</button>
+    </div>
+    <div class="game-state" id="game-state"></div>
+    <div class="game-board" id="game-board"></div>
+    <div class="button-group">
+        <button class="btn btn-secondary" id="reset-game-button">Reset Game</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let gameMode = 'player-vs-player';
+        let currentPlayer = 'X';
+        let gameBoard = [];
+        let moveHistory = [];
+
+        function createGameBoard() {
+            const gameBoardElement = document.getElementById('game-board');
+            gameBoardElement.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i;
+                cell.addEventListener('click', handleCellClick);
+                gameBoardElement.appendChild(cell);
+                gameBoard.push('');
+            }
+        }
+
+        function handleCellClick(event) {
+            const cellIndex = event.target.dataset.index;
+            if (gameBoard[cellIndex] === '') {
+                gameBoard[cellIndex] = currentPlayer;
+                updateGameBoard();
+                checkForWinner();
+                if (gameMode === 'player-vs-player') {
+                    switchPlayer();
+                } else if (gameMode === 'player-vs-computer') {
+                    makeComputerMove();
+                }
+            }
+        }
+
+        function updateGameBoard() {
+            const gameBoardElement = document.getElementById('game-board');
+            const cells = gameBoardElement.children;
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].textContent = gameBoard[i];
+            }
+        }
+
+        function checkForWinner() {
+            const winningCombinations = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6]
+            ];
+            for (let i = 0; i < winningCombinations.length; i++) {
+                const combination = winningCombinations[i];
+                if (gameBoard[combination[0]] === gameBoard[combination[1]] &&
+                    gameBoard[combination[1]] === gameBoard[combination[2]] &&
+                    gameBoard[combination[0]] !== '') {
+                    declareWinner(gameBoard[combination[0]]);
+                    return;
+                }
+            }
+            if (!gameBoard.includes('')) {
+                declareDraw();
+            }
+        }
+
+        function declareWinner(winner) {
+            const gameStateElement = document.getElementById('game-state');
+            gameStateElement.textContent = `Player ${winner} wins!`;
+            disableGameBoard();
+        }
+
+        function declareDraw() {
+            const gameStateElement = document.getElementById('game-state');
+            gameStateElement.textContent = 'It\'s a draw!';
+            disableGameBoard();
+        }
+
+        function disableGameBoard() {
+            const gameBoardElement = document.getElementById('game-board');
+            const cells = gameBoardElement.children;
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].removeEventListener('click', handleCellClick);
+            }
+        }
+
+        function switchPlayer() {
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            const gameStateElement = document.getElementById('game-state');
+            gameStateElement.textContent = `Player ${currentPlayer}'s turn`;
+        }
+
+        function makeComputerMove() {
+            const availableCells = [];
+            for (let i = 0; i < gameBoard.length; i++) {
+                if (gameBoard[i] === '') {
+                    availableCells.push(i);
+                }
+            }
+            const randomIndex = Math.floor(Math.random() * availableCells.length);
+            gameBoard[availableCells[randomIndex]] = 'O';
+            updateGameBoard();
+            checkForWinner();
+            switchPlayer();
+        }
+
+        document.getElementById('player-vs-player-button').addEventListener('click', () => {
+            gameMode = 'player-vs-player';
+            currentPlayer = 'X';
+            gameBoard = [];
+            moveHistory = [];
+            createGameBoard();
+            const gameStateElement = document.getElementById('game-state');
+            gameStateElement.textContent = `Player ${currentPlayer}'s turn`;
+        });
+
+        document.getElementById('player-vs-computer-button').addEventListener('click', () => {
+            gameMode = 'player-vs-computer';
+            currentPlayer = 'X';
+            gameBoard = [];
+            moveHistory = [];
+            createGameBoard();
+            const gameStateElement = document.getElementById('game-state');
+            gameStateElement.textContent = `Player ${currentPlayer}'s turn`;
+        });
+
+        document.getElementById('reset-game-button').addEventListener('click', () => {
+            gameMode = 'player-vs-player';
+            currentPlayer = 'X';
+            gameBoard = [];
+            moveHistory = [];
+            createGameBoard();
+            const gameStateElement = document.getElementById('game-state');
+            gameStateElement.textContent = `Player ${currentPlayer}'s turn`;
+        });
+
+        createGameBoard();
+    </script>
+</body>
+</html>
